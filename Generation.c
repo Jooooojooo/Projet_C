@@ -1,34 +1,45 @@
-#include <stdio.h>          /* TOUT COMMENTER */
+#include <stdio.h>
 #include <stdlib.h>         
 #include <time.h>
 
-#include "Generation.h"
+#include "GJB_Extraction.h"
+
 /* Ce fichier contient les fonctions necessaires à la génération de S et à l'affichage */
 
 
-void Generation_Vecteur(unsigned int *pt, int l)  /* Attention rand() renvoie un int donc n<= 32. A modifier, si on veut travailler avec n>32.*/
-{
-    for(int i=0; i<l; i++)
-    {
-        pt[i]=rand()&((1<<n)-1);
+/* 
+Attention rand() renvoie un int donc n<= 32. A modifier, si on veut travailler avec n>32.
+pt : Pointeur vers notre vecteur.
+length : taille de ce dernier.
+*/
+void Generation_Vecteur(unsigned int *pt, unsigned int length){
+    srand(time(NULL));
+    for(int i=0; i<length; i++){
+        pt[i] = rand(); /* faut voir comment RAND_MAX change pour voir se qu'il faut faire pour des unsigned long long, OU FAIRE NOTRE PROPRE RANDOM en X bits */
     }
 }
 
-void Affiche_Vecteur(unsigned int y) /*Affiche un entier 32 bits en binaire*/
-{
-    int x;
-    for(int i=0,i<n;i++){
-        x=y&1;
-        printf("%d",x);
-        y=y>>1;
+/*
+Affiche un entier 32 bits en binaire
+*/
+void Affiche_Vecteur(unsigned int n) {
+    int bit;
+    for(int i=0; i<32; i++){
+        bit = n&1;
+        printf("%d", bit);
+        n = n>>1;
     }
     printf("\n");
 }
-
-void Affiche_Ensemble(unsigned int *pt, int l)
-{
-    for(int i=0;i<l;i++){
+/*
+Affiche un ensemble d'entiers 32 bits en binaire
+*/
+void Affiche_Ensemble(unsigned int *pt, unsigned int length){
+    printf("{");
+    for(int i=0; i<length; i++){
+        printf("{");
         Affiche_Vecteur(pt[i]);
+        printf("}");
     }
-
+    printf("}");
 }
