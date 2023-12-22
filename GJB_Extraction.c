@@ -2,89 +2,119 @@
 #include <stdlib.h>         
 #include <time.h>
 
-#include "GJB_Extraction.h"
+//#include "GJB_Extraction.h"
 
 /* Ce fichier contiendra la fonction qui calcule les différents sous espace de dimension d d'un ensemble S*/
 
 /* Pour l"instant n<=32, donc le type sera int. Si on veut n>32, il faudra mofier en long long*/
 
-
-int* Resultat; // Liste qui va stocker chi_a_S
-int** L; // Liste qui contiendra tout les sous espacess de dimension d
-int n; // dimension des vecteurs
-int nombre_de_vect;
-
-
-typedef struct Int_Matrice Int_Matrice;
-struct Int_Matrice
+void Affiche_Vecteur(unsigned int y, int n) /*Affiche un entier 32 bits en binaire*/
 {
-    int x;
-    int** y;
-};
+    unsigned int x;
+    for(int i=0;i<n;i++){
+        x=y&1;
+        printf("%d",x);
+        y=y>>1;
+    }
+    printf("\n");
+}
+
+void Affiche_Ensemble(unsigned int *pt, int n, int l)
+{
+    for(int i=0;i<l;i++){
+        Affiche_Vecteur(pt[i],n);
+    }
+
+}
 
 
-int chi_a_S(int a, int* S, int* Resultat)   /* Version Facile de chi_a_S sans trier S*/
+
+int chi_a_S(int a, int* S, int* pt,int nombre_de_vect)   /* Version Facile de chi_a_S sans trier S*/
 {
     int k=0;
     for(int i=0; i<nombre_de_vect; i++)
     {
-        if ((S[i] > a) & (S[i]^a > S[i]))
+        if (((S[i]) > a) & (((S[i])^a)> S[i]))
         {
             for(int j=0; j<nombre_de_vect; j++)
             {
-                if (S[i]^a == S[j])
+                if (((S[i])^a) == S[j])
                 {
                     
-                    Resultat[k] = S[i];
+                    pt[k] = S[i];
                     k++;
                     if(k%1024 == 0){
-                        Resultat=(int*) realloc(Resultat,(k+1024)*sizeof(int));
-                    }
-                }
-            }
-        }
+                        pt=(int*) realloc(pt,(k+1024)*sizeof(int));
+                    } } } }
     }
     return(k);
 }
 
-Int_Matrice GJBExtraction(int* S, int d) /* A finir.*/
+int GJBExtraction(int* S, int d, int nombre_de_vect,int*pt, int** L, int** newL) /* newL est la pour stocke la nouvelle adresse de L en sortie de fonction car realloc peut modifier l'addresse de.*/
 {
-    Int Matrice Sortie;
-    int Taille_prime;
-    int compteur;
-    int Taille;
-    int ** L_prime;
-    for (int i=0; i<nombre_de_vect; i++)
+    int Taille_L_new=0;
+    int Taille_L_old=0;
+    int Taille_S_a;
+    if((d-1)!=0){
+        for (int i=0; i<nombre_de_vect; i++)
     {
-        Taille= chi_a_S(S[i], S, Resultat);
-        if((d-1)!=0){
-            if (Taille>= ((1<<(d-1))-1))
+        Taille_S_a= chi_a_S(S[i],S,pt,nombre_de_vect);
+            if (Taille_S_a> ((1<<(d-1))-1))
             {
-                Taille_prime= GJBExtraction(Resultat, d-1).x; 
-                L_prime= GJBExtraction(Resultat, d-1).y;
-                compteur= compteur+Taille_prime;
-                for(int j=0; j<Taille_prime; j++)
+                Taille_L_old=GJBExtraction(pt, d-1,Taille_S_a,pt,L,newL);
+                for(int j=Taille_L_new; j<Taille_L_new+Taille_L_old; j++)
                 {
                     if(j%1024 == 0){
-                        L=(int **)realloc(L,(j+1024)*sizeof(long long));
+                        L=(int **)realloc(L,(j+1024)*sizeof(int*));
                         for(int a=0; a<1024; a++){
-                            L[j+a]=malloc(d*sizeof(long long));
+                            L[j+a]=malloc(d*sizeof(int));
                         }
-                    L[j+i*Taille_prime][d]=S[i];
-                    for( int p=0; p<d-1; p++){
-                        L[j+i*Taille_prime][p]=L_prime[j][p];
+                    L[j][d-1]=S[i];
                     }
+                Taille_L_new=Taille_L_new+Taille_L_old;    
+                }
+                }
+       
 
-                    }
-                    
-                }
-                }
         }
-
     }
-    Sortie.x=compteur;
-    Sortie.y=L;
-    return(Sortie);
+for(int l=0;l<nombre_de_vect;l++){
+    if((l)%1024 ==0){
+        L=(int **)realloc(L,(l+1024)*sizeof(int*));}
+        for(int q=0;q<1024;q++){
+            L[l]=malloc(d*sizeof(int));
+        }
+    L[l][0]=S[l];
+    Taille_L_new=Taille_L_new + nombre_de_vect;
+}
+newL= L;
+return(Taille_L_new);        }
+   
+
+
+
+int main(){
+    int* S=malloc(6*sizeof(int));
+    int** newL=malloc(1024*sizeof(int*));
+    for(int i=0;i<1024;i++){
+        newL[i]=malloc(2*sizeof(int));}
+    int** L=malloc(1024*sizeof(int*));
+    for(int i=0;i<1024;i++){
+        L[i]=malloc(2*sizeof(int));
+    }
+    S[0]=0;
+    S[1]=1;
+    S[2]=2;
+    S[3]=3;
+    S[4]=6;
+    S[5]=7;
+    int *pt=malloc(1024*sizeof(int));
+    int x=GJBExtraction(S,2,6,pt,L,newL);
+    for(int j=0;j<x;j++){
+        Affiche_Ensemble(newL[j],3,2);
+    
+    }
+
 }
 
 
