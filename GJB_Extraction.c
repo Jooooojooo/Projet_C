@@ -38,12 +38,12 @@ int GJBExtraction(int* S, int d, int Taille,int**pt, int*** L){
                 Taille_L_old=GJBExtraction(pt[0], d-1,Taille_S_a,pt,L);
                 for(int j=Taille_L_new; j<Taille_L_new+Taille_L_old; j++){
                     if(j%1024 == 0){
-                        L[0]=(int **)realloc(L[0],(j+1024)*sizeof(int*));
+                        L[0]=(int **)realloc(L[0],(j+1024)*sizeof(int*)); // Problème, j'ai fait n'imp.
                         for(int a=0; a<1024; a++){
                             L[0][j+a]=malloc(d*sizeof(int));
-                        }
+                        }}
                         L[0][j][d-1]=S[i];
-                    }
+                    
                 Taille_L_new=Taille_L_new+Taille_L_old;    
                 }
             }
@@ -121,7 +121,6 @@ void Affiche_Ensemble_ord(int *pt, int length, int n){
 int main(){
     /*Test pour n=3, d=2, S={0,1,2,3,5,7}, |S|=6, le résultat attendu est 4. 
     Chi_a_S est vide pour a dans{0,2,3,4,5}  et possède deux éléments pour a=1.*/
-    
     int* S=malloc(6*sizeof(int));
     S[0]=0;
     S[1]=1;
@@ -134,10 +133,9 @@ int main(){
     int d=2;
     int Taille = 6;
 
-
     int*** L=malloc(sizeof(int**));
     L[0]=malloc(1024*sizeof(int*));    
-    for(int j=0;j<1024;d++){
+    for(int j=0;j<1024;j++){
         L[0][j]=malloc(d*sizeof(int));
     }
     
@@ -160,21 +158,8 @@ int main(){
         Affiche_Ensemble_ord(L[0][j],d,n);
     }
 
-    int y=x%1024;
+    
 
-    free(pt[0]);
-    free(pt);
-
-
-    if(y =!0){
-        for(int k=0;k<(x+(1024-(x%1024)));k++){
-        free(L[0][k]);}}
-    if(y==0){
-        for(int k=0; k<x;k++ )
-        { free(L[0][k]);
-        }
-    }
-    free(L[0]);
-    free(L);
+    
     
 }
