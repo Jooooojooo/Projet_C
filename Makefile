@@ -2,7 +2,7 @@
 CC = gcc
 
 # Options de compilation
-CFLAGS = -O3 -fopenmp
+CFLAGS = -O3 -fopenmp 
 
 # Fichiers source
 SRCS = Version_NonParallelisee.c Version_Parallelisee.c Version_SBox.c

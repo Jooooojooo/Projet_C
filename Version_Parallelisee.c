@@ -20,7 +20,7 @@ PUIS:
 gcc -O3 -Xpreprocessor -fopenmp -lomp Version_Parallelisee.c -I/opt/homebrew/Cellar/libomp/17.0.6/include -o Version_threads -L/opt/homebrew/Cellar/libomp/17.0.6/lib
 
 PUIS:
-./Version_threads (n) (Taille) (d)
+./Version_Parallelisee (n) (Taille) (d)
 
 <!> attention: changement potentiellement nécessaire des -I/ et -L/ (et du numéro de version) selon lieu du téléchargement de libomp <!>
 
@@ -30,7 +30,7 @@ POUR COMPILER SUR WINDOWS (via ubuntu):
 gcc -O3 -fopenmp -o Version_Parallelisee Version_Parallelisee.c
 
 PUIS:
-./Version_threads (n) (Taille) (d)
+./Version_Parallelisee (n) (Taille) (d)
 ___________________________________________________________________________________________________*/
 
 /* Inclusion des bibliothèques standards de C */
@@ -282,9 +282,9 @@ UTILISE: /
 ENTRÉE: une matrice d'entiers L et un entier d
 SORTIE: la somme des éléments de la d-ème colonne de L
 _____________________________________________________________________________*/
-uint64_t Somme(uint64_t **L,int d){
-    uint64_t S=0;
-    for(uint64_t i=0;i<omp_get_max_threads();i++ ){
+uint64_t Somme(uint64_t **L, int d){
+    uint64_t S = 0;
+    for(int i=0; i < omp_get_max_threads(); i++){
         S = S + L[i][d];
     }
     return(S);
@@ -345,7 +345,7 @@ uint64_t GJBExtraction_Tri(uint64_t* S, int d, uint64_t Taille, uint64_t***pt, u
                 thread_id=omp_get_thread_num();
                 if (phi[thread_id][d-1][i]==1){    
                     Taille_S_a = chi_a_S_Tri(S[i],S,pt,Taille,d,thread_id);
-                    if (Taille_S_a >= ((1<<(d-1))-1)){
+                    if (Taille_S_a >= ((1ULL<<(d-1))-1)){
                         Taille_L_old=GJBExtraction_Tri(pt[thread_id][d-1], d-1,Taille_S_a,pt,L,n,compteurs,phi,0,d_const);
                         for(uint64_t j=(compteurs[thread_id][d-1]); j<(Taille_L_old+compteurs[thread_id][d-1]); j++){ 
                             L[thread_id][j][d-1]=S[i];
@@ -363,7 +363,7 @@ uint64_t GJBExtraction_Tri(uint64_t* S, int d, uint64_t Taille, uint64_t***pt, u
             for (uint64_t i=0; i<Taille; i++){          
                 if (phi[thread_id][d-1][i]==1){    
                     Taille_S_a = chi_a_S_Tri(S[i],S,pt,Taille,d,thread_id);
-                    if (Taille_S_a >= ((1<<(d-1))-1)){    
+                    if (Taille_S_a >= ((1ULL<<(d-1))-1)){    
                         Taille_L_old=GJBExtraction_Tri(pt[thread_id][d-1], d-1,Taille_S_a,pt,L,n,compteurs,phi,0,d_const)+Taille_L_new;
                         for(uint64_t j=(compteurs[thread_id][d-1]+Taille_L_new); j<(Taille_L_old+compteurs[thread_id][d-1]); j++){  
                             L[thread_id][j][d-1]=S[i];
@@ -378,7 +378,7 @@ uint64_t GJBExtraction_Tri(uint64_t* S, int d, uint64_t Taille, uint64_t***pt, u
     }
     if(d ==1){   
         thread_id=omp_get_thread_num();  
-        for(int l=compteurs[thread_id][0];l<(Taille+compteurs[thread_id][0]);l++){
+        for(uint64_t l = compteurs[thread_id][0]; l < (Taille + compteurs[thread_id][0]); l++){
             if(((l+1)%1024 == 0) & ((l+1)<=(Taille+compteurs[thread_id][0]))){ 
                 L[thread_id]=(uint64_t **)realloc(L[thread_id],(l+1+1024)*sizeof(uint64_t*));
                 for(int q=0;q<1024;q++){
@@ -436,7 +436,7 @@ int main(int argc, char const *argv[]){
         phi[j]=malloc(d*sizeof(uint64_t*));
         for(int i=0; i<d; i++){
             phi[j][i]=malloc(Taille*sizeof(uint64_t));
-            for(int k=0;k<Taille;k++){
+            for(uint64_t k = 0; k < Taille; k++){
                 phi[j][i][k]=0;
             }
         }
@@ -473,7 +473,6 @@ int main(int argc, char const *argv[]){
     /* Obtention et affichage du temps de calcul de la fonction GJBExtraction (en secondes)*/
     temps -= omp_get_wtime();
     temps *= -1; 
-    printf("Le temps de calcul de GJBExtraction_Tri est: %f secondes\n", temps);
 
     /* Affichage des bases trouvées - ATTENTION: peut tuer votre terminal si vous avez utilisé la
     version S[i] = {1, ..., Taille} avec n et d trop grands */
@@ -498,7 +497,7 @@ int main(int argc, char const *argv[]){
     free(S);
     
     for(int i=0;i<omp_get_max_threads();i++){
-        for(int j=0;j< ((compteurs[i][0] / 1024) + 1)*1024;j++){
+        for(uint64_t j = 0; j < ((compteurs[i][0] / 1024) + 1)*1024; j++){
             free(L[i][j]);
         }
         free(L[i]);
@@ -525,5 +524,4 @@ int main(int argc, char const *argv[]){
         free(phi[i]);
     }
     free(phi);
-
 }

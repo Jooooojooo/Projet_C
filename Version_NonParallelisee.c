@@ -333,7 +333,7 @@ uint64_t GJBExtraction(uint64_t* S, int d, uint64_t Taille, uint64_t**pt, uint64
         for (uint64_t i = 0; i < Taille; i++){
             if (phi[d-1][i] == 1){
                 Taille_S_a = chi_a_S(S[i], S, pt, Taille, d);
-                if (Taille_S_a >= ((1 << (d-1)) - 1)){
+                if (Taille_S_a >= ((1ULL << (d-1)) - 1)){
                     Taille_L_old = GJBExtraction(pt[d-1], d-1, Taille_S_a, pt, L, n, compteurs, phi, d_const) + Taille_L_new;
                     for(uint64_t j = (Taille_L_new + compteurs[d-1]); j < (Taille_L_old + compteurs[d-1]); j++){
                         L[0][j][d-1]=S[i];
@@ -346,7 +346,7 @@ uint64_t GJBExtraction(uint64_t* S, int d, uint64_t Taille, uint64_t**pt, uint64
         return(Taille_L_new);
     }
     if(d == 1){
-        for(int l = compteurs[0]; l < (Taille + compteurs[0]); l++){
+        for(uint64_t l = compteurs[0]; l < (Taille + compteurs[0]); l++){
             if(((l + 1) % 1024 == 0) & ((l + 1) <= (Taille + compteurs[0]))){      /* Réallocation dynamique de mémoire pour L */
                 L[0]=(uint64_t **)realloc(L[0],(l+1+1024) * sizeof(uint64_t*));
                 for(int q=0; q < 1024; q++){
@@ -373,7 +373,7 @@ uint64_t GJBExtraction_Tri(uint64_t* S, int d, uint64_t Taille, uint64_t**pt, ui
         for (uint64_t i = 0; i < Taille; i++){
             if (phi[d-1][i] == 1){
                 Taille_S_a = chi_a_S_Tri(S[i], S, pt, Taille, d, n);
-                if (Taille_S_a >= ((1 << (d-1)) - 1)){
+                if (Taille_S_a >= ((1ULL << (d-1)) - 1)){
                     Taille_L_old = GJBExtraction_Tri(pt[d-1], d-1, Taille_S_a, pt, L, n, compteurs, phi, d_const) + Taille_L_new;
                     for(uint64_t j = (Taille_L_new + compteurs[d-1]); j < (Taille_L_old + compteurs[d-1]); j++){
                         L[0][j][d-1]=S[i];
@@ -512,7 +512,7 @@ int main(int argc, char const *argv[]){
     
     free(compteurs);
     
-    for(int j = 0; j < ((x / 1024) + 1) * 1024; j++){
+    for(uint64_t j = 0; j < ((x / 1024) + 1) * 1024; j++){
         free(L[0][j]);
     }
     free(L[0]);

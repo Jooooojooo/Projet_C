@@ -121,16 +121,15 @@ NOTES:
 _____________________________________________________________________________*/
 void phi_d_Tri(uint64_t* S, int d, uint64_t*** pt, int n, uint64_t Taille, int thread_id){
     uint64_t msb_liste[n]; 
-    uint64_t prev_msb = -1;
-    uint64_t prev_result = -1;
+    short prev_msb = -1;
+    short prev_result = -1;
     for(int i = 0; i < n; i++){
         msb_liste[i] = 0;
     }
     for(uint64_t k = 0; k < Taille; k++) msb_liste[MSB(S[k], n)]++;
     for(uint64_t j = 0; j < Taille; j++){
-        int msb = MSB(S[j], n);
-        uint64_t result;  
-        
+        short msb = MSB(S[j], n);
+        short result;  
         if(msb == prev_msb){
             result = prev_result;
         }
@@ -259,7 +258,7 @@ SORTIE: la somme des éléments de la d-ème colonne de L
 _____________________________________________________________________________*/
 uint64_t Somme(uint64_t **L,int d){
     uint64_t S=0;
-    for(uint64_t i=0;i<omp_get_max_threads();i++ ){
+    for(int i=0;i<omp_get_max_threads();i++ ){
         S = S + L[i][d];
     }
     return(S);
@@ -319,7 +318,7 @@ uint64_t GJBExtraction_Tri(uint64_t* S, int d, uint64_t Taille, uint64_t***pt, u
                 thread_id=omp_get_thread_num();
                 if (phi[thread_id][d-1][i]==1){    
                     Taille_S_a = chi_a_S_Tri(S[i],S,pt,Taille,d,thread_id);
-                    if (Taille_S_a >= ((1<<(d-1))-1)){
+                    if (Taille_S_a >= ((1ULL<<(d-1))-1)){
                         Taille_L_old=GJBExtraction_Tri(pt[thread_id][d-1], d-1,Taille_S_a,pt,L,n,compteurs,phi,0,d_const);
                         for(uint64_t j=(compteurs[thread_id][d-1]); j<(Taille_L_old+compteurs[thread_id][d-1]); j++){ 
                             L[thread_id][j][d-1]=S[i];
@@ -337,7 +336,7 @@ uint64_t GJBExtraction_Tri(uint64_t* S, int d, uint64_t Taille, uint64_t***pt, u
             for (uint64_t i=0; i<Taille; i++){          
                 if (phi[thread_id][d-1][i]==1){    
                     Taille_S_a = chi_a_S_Tri(S[i],S,pt,Taille,d,thread_id);
-                    if (Taille_S_a >= ((1<<(d-1))-1)){    
+                    if (Taille_S_a >= ((1ULL<<(d-1))-1)){    
                         Taille_L_old=GJBExtraction_Tri(pt[thread_id][d-1], d-1,Taille_S_a,pt,L,n,compteurs,phi,0,d_const)+Taille_L_new;
                         for(uint64_t j=(compteurs[thread_id][d-1]+Taille_L_new); j<(Taille_L_old+compteurs[thread_id][d-1]); j++){  
                             L[thread_id][j][d-1]=S[i];
@@ -352,7 +351,7 @@ uint64_t GJBExtraction_Tri(uint64_t* S, int d, uint64_t Taille, uint64_t***pt, u
     }
     if(d ==1){   
         thread_id=omp_get_thread_num();  
-        for(int l=compteurs[thread_id][0];l<(Taille+compteurs[thread_id][0]);l++){
+        for(uint64_t l=compteurs[thread_id][0];l<(Taille+compteurs[thread_id][0]);l++){
             if(((l+1)%1024 == 0) & ((l+1)<=(Taille+compteurs[thread_id][0]))){ 
                 L[thread_id]=(uint64_t **)realloc(L[thread_id],(l+1+1024)*sizeof(uint64_t*));
                 for(int q=0;q<1024;q++){
@@ -484,26 +483,32 @@ int main(int argc, char const *argv[]){
  
     uint64_t*** L=malloc(omp_get_max_threads()*sizeof(uint64_t**));
     for(int i=0;i<omp_get_max_threads();i++){
-    L[i]=malloc(1024*sizeof(uint64_t*));    
-    for(int j=0;j<1024;j++){
-        L[i][j]=malloc(d*sizeof(uint64_t));
-    }}
+        L[i]=malloc(1024*sizeof(uint64_t*));    
+        for(int j=0;j<1024;j++){
+            L[i][j]=malloc(d*sizeof(uint64_t));
+        }
+    }
 
   
     uint64_t*** pt=malloc(omp_get_max_threads()*sizeof(uint64_t**));
     for(int j=0;j<omp_get_max_threads();j++){
         pt[j]=malloc(d*sizeof(uint64_t*));
-     for(int i=0; i<d; i++){
-        pt[j][i]=malloc(Taille*sizeof(uint64_t));}}
+        for(int i=0; i<d; i++){
+            pt[j][i]=malloc(Taille*sizeof(uint64_t));
+        }
+    }
 
 
     uint64_t*** phi=malloc(omp_get_max_threads()*sizeof(uint64_t**));
     for(int j=0;j<omp_get_max_threads();j++){
         phi[j]=malloc(d*sizeof(uint64_t*));
-    for(int i=0; i<d; i++){
-        phi[j][i]=malloc(Taille*sizeof(uint64_t));
-    for(int k=0;k<Taille;k++){
-        phi[j][i][k]=0;}}}
+        for(int i=0; i<d; i++){
+            phi[j][i]=malloc(Taille*sizeof(uint64_t));
+            for(uint64_t k=0;k<Taille;k++){
+                phi[j][i][k]=0;
+                }
+            }
+    }
 
 
     /* Tri de S - temps négligeable */
@@ -524,12 +529,13 @@ int main(int argc, char const *argv[]){
     
     for(int i=0;i<omp_get_max_threads();i++){
         int somme_totale = 0;
-        for(uint64_t k = 0; k<i; k++){
+        for(int k = 0; k<i; k++){
             somme_totale += compteurs[k][d-1];
         }
         for(uint64_t j=0;j<compteurs[i][d-1];j++){
             printf("Le %llu-ème sous espace de dimension %d associé au coeur %d est : ",j+1+somme_totale,d,i);
-            Affiche_Ensemble_ord(L[i][j],d,n);}
+            Affiche_Ensemble_ord(L[i][j],d,n);
+        }
     }
 
     printf("Le nombre de GJB de dimension %d dans S vaut %llu\n",d,x);
@@ -544,7 +550,7 @@ int main(int argc, char const *argv[]){
     
     
     for(int i=0;i<omp_get_max_threads();i++){
-        for(int j=0;j< ((compteurs[i][0] / 1024) + 1)*1024;j++){
+        for(uint64_t j=0;j< ((compteurs[i][0] / 1024) + 1)*1024;j++){
             free(L[i][j]);
         }
         free(L[i]);
@@ -571,6 +577,4 @@ int main(int argc, char const *argv[]){
         free(phi[i]);
     }
     free(phi);
-
-
 }
