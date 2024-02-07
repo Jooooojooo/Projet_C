@@ -3,6 +3,9 @@ CC = gcc
 
 # Options de compilation
 CFLAGS = -O3 -fopenmp 
+### Si sur MacOS avec homebrew, faire brew install libomp puis récupérer l'emplacement de téléchargement pour ensuite compiler.
+### Exemple ci-dessous:
+### CFLAGS = -O3 -Xpreprocessor -fopenmp -lomp -I/opt/homebrew/Cellar/libomp/17.0.6/include -L/opt/homebrew/Cellar/libomp/17.0.6/lib
 
 # Fichiers source
 SRCS = Version_NonParallelisee.c Version_Parallelisee.c Version_SBox.c
